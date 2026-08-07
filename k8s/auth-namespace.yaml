@@ -1,0 +1,5 @@
+# microservice-auth-service namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: microservice-auth-service
