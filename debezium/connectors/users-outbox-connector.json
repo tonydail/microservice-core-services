@@ -18,6 +18,7 @@
     "transforms.outbox.table.field.event.type": "event_type",
     "transforms.outbox.table.field.event.payload": "payload",
     "transforms.outbox.table.field.event.timestamp": "created_at",
+    "transforms.outbox.route.by.field": "event_type",
     "transforms.outbox.route.topic.replacement": "users.${routedByValue}",
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
