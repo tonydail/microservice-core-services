@@ -89,7 +89,7 @@ services:
     ports:
       - "8978:8978"
     volumes:
-      - ../environment/cloudbeaver-workspace-data:/opt/cloudbeaver/workspace
+      - ../environment/cloudbeaver-workspace-data:/opt/cloudbeaver/workspace:cached
     networks:
       - microservices-net
 

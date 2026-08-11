@@ -138,22 +138,26 @@ if check_services_running; then
   echo ""
   echo "What would you like to do?"
   echo "  1) Stop services"
-  echo "  2) View logs"
-  echo "  3) Exit"
+  echo "  2) Teardown services"
+  echo "  3) View logs"
+  echo "  4) Exit"
   echo ""
-  read -p "Enter your choice (1-3): " choice
+  read -p "Enter your choice (1-4): " choice
   
   case $choice in
     1)
       stop_services
       ;;
     2)
+      teardown_services
+      ;;
+    3)
       echo ""
       echo "Press Ctrl+C to exit logs"
       sleep 2
       $COMPOSE -f "$SCRIPT_DIR/docker-compose.yml" logs -f
       ;;
-    3)
+    4)
       echo "Exiting."
       exit 0
       ;;
