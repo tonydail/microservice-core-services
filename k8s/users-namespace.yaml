@@ -1,5 +1,0 @@
-# microservice-users-service namespace
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: microservice-users-service
