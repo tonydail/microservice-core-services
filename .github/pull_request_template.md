@@ -15,7 +15,6 @@ tonydail/microservices-ops#{issue-key}
 - [ ] 📚 Documentation update
 
 ## 🧪 How Has This Been Tested?
-<!-- Describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. -->
 - [ ] **Unit Tests:** `npm test` or equivalent command.
 - [ ] **Manual Testing:** <!-- Detail your manual reproduction steps here -->
 
