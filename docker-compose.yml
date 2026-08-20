@@ -10,9 +10,8 @@ services:
     image: confluentinc/cp-zookeeper:7.6.1
     container_name: microservice-core-services-zookeeper
     restart: unless-stopped
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+    env_file:
+      - ../environment/zookeeper.env
     networks:
       - microservices-net
 
@@ -24,14 +23,8 @@ services:
       - zookeeper
     ports:
       - "29092:29092"   # host access for tooling (e.g. Kafka UI, kafkacat)
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    env_file:
+      - ../environment/kafka.env
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
       interval: 10s
@@ -50,19 +43,7 @@ services:
     ports:
       - "8083:8083"
     env_file:
-      - ../environment/container-hosts.env
-      - ../environment/common-service-db.env
-      - ../environment/microservice-users-service-db.env
-      - ../environment/microservice-auth-service-db.env
-    environment:
-      BOOTSTRAP_SERVERS: kafka:9092
-      GROUP_ID: debezium-connect
-      CONFIG_STORAGE_TOPIC: debezium-configs
-      OFFSET_STORAGE_TOPIC: debezium-offsets
-      STATUS_STORAGE_TOPIC: debezium-status
-      CONFIG_STORAGE_REPLICATION_FACTOR: 1
-      OFFSET_STORAGE_REPLICATION_FACTOR: 1
-      STATUS_STORAGE_REPLICATION_FACTOR: 1
+      - ../environment/kafka-connect.env
     networks:
       - microservices-net
 
@@ -74,11 +55,8 @@ services:
       - kafka
     ports:
       - "8080:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: debezium
-      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect:8083
+    env_file:
+    - ../environment/kafka-ui.env
     networks:
       - microservices-net
 
