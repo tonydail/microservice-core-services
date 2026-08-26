@@ -7,7 +7,7 @@ This repository provides the **shared infrastructure stack** for the microservic
 ## 🎯 Purpose
 
 The Core Services repository provides:
-- **Message Broker**: Kafka + Zookeeper for event-driven communication
+- **Message Broker**: Kafka w/ (KRaft)
 - **CDC Pipeline**: Debezium Kafka Connect for transactional outbox pattern
 - **API Gateway**: nginx with JWT validation and request routing
 - **Management Tools**: Kafka UI for monitoring, CloudBeaver for database management
@@ -18,8 +18,7 @@ This infrastructure is **designed to be forked and customized** — adapt the co
 ## 🏗️ Infrastructure Components
 
 ### Message Streaming
-- **Zookeeper**: Kafka coordination service
-- **Kafka**: Event streaming platform (port 29092 for host access, 9092 internal)
+- **Kafka (KRaft mode)**: Event streaming platform (port 29092 for host access, 9092 internal)
 - **Kafka Connect**: Debezium connector runtime (port 8083)
 - **Kafka UI**: Web-based Kafka management interface (port 8080)
 
@@ -27,7 +26,8 @@ This infrastructure is **designed to be forked and customized** — adapt the co
 - **nginx**: Reverse proxy with JWT validation (port 80)
   - Routes `/auth/*` → `auth-service:3001`
   - Routes `/users/*` → `users-service:3002`
-  - Validates JWT and injects `X-User-Id` and `X-User-Role` headers
+  - Validates JWT via internal `/_auth` endpoint
+  - Injects `X-User-Id` and `X-User-Roles` headers from validation response
 
 ### Management Tools
 - **CloudBeaver**: Database administration tool (port 8978)
@@ -62,7 +62,6 @@ This infrastructure is **designed to be forked and customized** — adapt the co
                    │
          ┌─────────▼─────────┐
          │  Kafka:9092       │ ← Event Streaming
-         │  (+ Zookeeper)    │
          └─────────┬─────────┘
                    │
          ┌─────────▼─────────┐
@@ -80,23 +79,26 @@ This infrastructure is **designed to be forked and customized** — adapt the co
 ### API Gateway Routing
 nginx performs JWT validation and routing:
 
-| Path Pattern | Target Service | Port |
-|--------------|----------------|------|
-| `/auth/*` | auth-service | 3001 |
-| `/users/*` | users-service | 3002 |
+| Path Pattern | Target Service | Port | JWT Required |
+|--------------|----------------|------|--------------|
+| `/auth/*` | auth-service | 3001 | No (public endpoints) |
+| `/users/*` | users-service | 3002 | Yes (validated via /_auth) |
 
-After validation, nginx injects headers:
-- `X-User-Id`: User ID from JWT
-- `X-User-Role`: User role from JWT
+**JWT Validation Flow**:
+1. Client sends request to `/users/*` with `Authorization: Bearer <token>` header
+2. nginx internally forwards token to `/_auth` endpoint (auth-service `/validate`)
+3. Auth service validates token and returns `X-User-Id` and `X-User-Roles` headers
+4. nginx injects headers and forwards request to users-service
+5. Users service trusts injected headers (no re-validation needed)
 
-Services trust these headers and **do not re-validate tokens**.
+Services trust the injected headers and **do not re-validate tokens**.
 
 ## 🛠️ Tech Stack
 
 - **Container Orchestration**: Docker Compose
-- **Message Broker**: Apache Kafka + Zookeeper
+- **Message Broker**: Apache Kafka (KRaft mode, no Zookeeper required)
 - **CDC**: Debezium (PostgreSQL connector)
-- **API Gateway**: nginx
+- **API Gateway**: nginx with JWT validation
 - **Monitoring**: Kafka UI, CloudBeaver
 - **Networking**: Docker bridge network
 
@@ -187,10 +189,10 @@ Environment variables are loaded from the parent `environment/` folder:
 Configuration: `gateway/nginx.conf`
 
 Key features:
-- JWT validation (mocked in dev, implement in production)
-- Header injection (`X-User-Id`, `X-User-Role`)
-- Request routing based on path
-- CORS handling
+- **JWT validation**: Internal `/_auth` endpoint validates tokens via auth-service
+- **Header injection**: `X-User-Id`, `X-User-Roles` injected after validation
+- **Request routing**: Path-based routing to microservices
+- **CORS handling**: Cross-origin request support
 
 ### Kafka Connect (Debezium)
 Each service registers its own Debezium connector on startup using `register-outbox-connector.sh`. The connector configuration:
@@ -203,12 +205,11 @@ Each service registers its own Debezium connector on startup using `register-out
 
 | Service | Port (Host) | Port (Container) | Purpose |
 |---------|-------------|------------------|---------|
-| nginx | 80 | 80 | API Gateway |
+| nginx | 80 | 80 | API Gateway with JWT validation |
 | Kafka | 29092 | 9092 | Message broker (external/internal) |
 | Kafka Connect | 8083 | 8083 | Debezium CDC runtime |
 | Kafka UI | 8080 | 8080 | Kafka management UI |
 | CloudBeaver | 8978 | 8978 | Database admin tool |
-| Zookeeper | — | 2181 | Kafka coordination |
 
 ## 🔍 Monitoring & Management
 
