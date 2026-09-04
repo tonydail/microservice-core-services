@@ -17,7 +17,7 @@ fi
 
 echo ""
 echo "================================================"
-echo "  Tearing Down Core Services"
+echo "  Tearing Down Core Infrastructure Services"
 echo "================================================"
 echo ""
 echo "⚠️  WARNING: This will remove all Docker volumes!"
@@ -34,7 +34,7 @@ if [ "$confirm" != "yes" ]; then
 fi
 
 echo ""
-echo "Tearing down shared infra stack and volumes..."
+echo "Tearing down core infrastructure stack and volumes..."
 $COMPOSE -f "$SCRIPT_DIR/docker-compose.yml" down -v --remove-orphans
 
 # Remove shared Docker network if present
@@ -48,7 +48,7 @@ fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo " Core Services Torn Down"
+echo " Core Infrastructure Services Torn Down"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo " Docker volumes and network removed."
 echo " CloudBeaver workspace preserved in environment/cloudbeaver-workspace-data/"

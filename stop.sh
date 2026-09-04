@@ -17,12 +17,12 @@ fi
 
 echo ""
 echo "================================================"
-echo "  Stopping Core Services"
+echo "  Stopping Core Infrastructure Services"
 echo "================================================"
 
-$COMPOSE -f "$SCRIPT_DIR/docker-compose.yml" down
+$COMPOSE -f "$SCRIPT_DIR/docker-compose.yml" stop
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo " Core Services Stopped"
+echo " Core Infrastructure Services Stopped"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
