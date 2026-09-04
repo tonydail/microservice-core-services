@@ -18,8 +18,8 @@ services:
       - kafka_data:/var/lib/kafka/data
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092"]
-      interval: 10s
-      timeout: 10s
+      interval: 30s
+      timeout: 30s
       retries: 10
     networks:
       - microservices-net
@@ -28,6 +28,12 @@ services:
     image: debezium/connect:2.6
     container_name: microservice-core-services-kafka-connect
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "-X", "GET", "http://localhost:8083/connectors"]
+      interval: 30s
+      timeout: 30s
+      retries: 10
+      start_period: 30s
     depends_on:
       kafka:
         condition: service_healthy
@@ -42,8 +48,17 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: microservice-core-services-kafka-ui
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ui/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
+      kafka-connect:
+        condition: service_healthy
     ports:
       - "8080:8080"
     env_file:
@@ -55,6 +70,21 @@ services:
     image: dbeaver/cloudbeaver:latest
     container_name: microservice-core-services-cloudbeaver
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8978/status"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      nginx:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      kafka-connect:
+        condition: service_healthy
+      kafka-ui:
+        condition: service_healthy
     ports:
       - "8978:8978"
     volumes:
@@ -66,6 +96,13 @@ services:
     image: nginx:alpine
     container_name: microservice-core-services-api-gateway
     restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-connect:
+        condition: service_healthy
+      kafka-ui:
+        condition: service_healthy
     ports:
       - "80:80"
     volumes:

@@ -17,7 +17,7 @@ fi
 
 echo ""
 echo "================================================"
-echo "  Starting Core Services"
+echo "  Core Infrastructure Services"
 echo "================================================"
 
 # Create shared Docker network (idempotent)
@@ -31,11 +31,11 @@ fi
 
 # Start shared infra stack
 echo ""
-echo "Starting shared infra stack..."
+echo "Starting core infrastructure stack..."
 $COMPOSE -f "$SCRIPT_DIR/docker-compose.yml" up -d
 
 echo ""
-echo "Infra stack is up. Services:"
+echo "Core infrastructure stack is up. Services:"
 $COMPOSE -f "$SCRIPT_DIR/docker-compose.yml" ps
 
 echo ""
